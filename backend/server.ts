@@ -27,12 +27,33 @@ db.connect((err) => {
 const express = require("express")
 const app = express()
 
-// Route - Users
+/////////////////////
+//    ROUTES       //
+/////////////////////
+
+// GET All Users
 app.get("/users", (req, res) => {
-  console.log("API: All Users")
+  console.log("Endpoint: All Users")
 
   // query
   const query = "SELECT username FROM users ORDER BY username ASC"
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error executing query:", err.stack)
+      res.status(500).send("Server error")
+      return
+    }
+    res.json(results)
+  })
+})
+
+// GET All Posts
+app.get("/posts", (req, res) => {
+  console.log("Endpoint: All Posts")
+
+  // query
+  const query = "SELECT * FROM posts ORDER BY id ASC"
 
   db.query(query, (err, results) => {
     if (err) {
