@@ -27,6 +27,23 @@ db.connect((err) => {
 const express = require("express")
 const app = express()
 
+// Route - Users
+app.get("/users", (req, res) => {
+  console.log("API: All Users")
+
+  // query
+  const query = "SELECT username FROM users ORDER BY username ASC"
+
+  db.query(query, (err, results) => {
+    if (err) {
+      console.error("Error executing query:", err.stack)
+      res.status(500).send("Server error")
+      return
+    }
+    res.json(results)
+  })
+})
+
 app.listen(PORT, () => {
   console.log(`Node.js server running at http://localhost:${PORT}`)
 })
