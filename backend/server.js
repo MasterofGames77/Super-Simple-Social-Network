@@ -1,7 +1,13 @@
 require("dotenv").config() // Load .env file
 const mysql = require("mysql2")
+const cors = require("cors")
 const bodyParser = require("body-parser")
 const PORT = process.env.PORT
+const express = require("express") // init express server
+const app = express()
+
+// use cors middleware
+app.use(cors())
 
 // MySQL Configuration
 const HOST = process.env.DB_HOST
@@ -23,17 +29,13 @@ db.connect((err) => {
   console.log(`Connected to the Database!`)
 })
 
-// init express server
-const express = require("express")
-const app = express()
-
 /////////////////////
 //    ROUTES       //
 /////////////////////
 
 // GET All Users
-app.get("/users", (req, res) => {
-  console.log("Endpoint: All Users")
+app.get("/api/users", (req, res) => {
+  // console.log("Endpoint: All Users")
 
   // query
   const query = "SELECT username FROM users ORDER BY username ASC"
@@ -49,11 +51,11 @@ app.get("/users", (req, res) => {
 })
 
 // GET All Posts
-app.get("/posts", (req, res) => {
-  console.log("Endpoint: All Posts")
+app.get("/api/posts", (req, res) => {
+  // console.log("Endpoint: All Posts")
 
   // query
-  const query = "SELECT * FROM posts ORDER BY id ASC"
+  const query = "SELECT * FROM posts ORDER BY id DESC"
 
   db.query(query, (err, results) => {
     if (err) {
