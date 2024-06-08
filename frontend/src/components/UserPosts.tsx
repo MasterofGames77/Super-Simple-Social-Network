@@ -1,6 +1,11 @@
+// UserPosts.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
-import { useParams } from "react-router-dom";
+
+interface User {
+  id: number;
+  username: string;
+}
 
 interface Post {
   id: number;
@@ -11,58 +16,65 @@ interface Post {
 }
 
 const UserPosts: React.FC = () => {
-  const { id } = useParams<{ id: string }>();
+  const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<Post[]>([]);
 
   useEffect(() => {
-    axios
-      .get(`http://localhost:3000/posts/user/${id}`)
-      .then((response) => {
-        const postsWithInteractions = response.data.map((post: Post) => ({
-          ...post,
-          likes: post.likes || 0,
-          dislikes: post.dislikes || 0,
-        }));
-        setPosts(postsWithInteractions);
-      })
-      .catch((error) => {
-        console.error("There was an error fetching the posts!", error);
-      });
-  }, [id]);
+    // Fetch users
+    axios.get("http://localhost:3000/users").then((response) => {
+      setUsers(response.data);
+    });
 
-  const handleInteraction = (postId: number, type: "like" | "dislike") => {
-    axios
-      .post(`http://localhost:3000/posts/${postId}/interact`, { type })
-      .then(() => {
-        // Update the UI to reflect the interaction
-        const updatedPosts = posts.map((post) =>
-          post.id === postId
-            ? {
-                ...post,
-                [type === "like" ? "likes" : "dislikes"]:
-                  post[type === "like" ? "likes" : "dislikes"] + 1,
-              }
-            : post
-        );
-        setPosts(updatedPosts);
-      })
-      .catch((error) => {
-        console.error("There was an error interacting with the post!", error);
+    // Fetch posts
+    axios.get("http://localhost:3000/posts").then((response) => {
+      setPosts(response.data);
+    });
+  }, []);
+
+  const handleLikeDislike = async (
+    postId: number,
+    type: "like" | "dislike"
+  ) => {
+    try {
+      await axios.post(`http://localhost:3000/posts/${postId}/interact`, {
+        type,
       });
+      // Refresh posts after interaction
+      const postsData = await axios.get("http://localhost:3000/posts");
+      setPosts(postsData.data);
+    } catch (error) {
+      console.error("Error interacting with post:", error);
+    }
   };
 
   return (
     <div>
       <h1>User Posts</h1>
-      {posts.map((post) => (
-        <div key={post.id}>
-          <p>{post.content}</p>
-          <button onClick={() => handleInteraction(post.id, "like")}>
-            Like {post.likes}
-          </button>
-          <button onClick={() => handleInteraction(post.id, "dislike")}>
-            Dislike {post.dislikes}
-          </button>
+      {users.map((user) => (
+        <div key={user.id}>
+          <h2>{user.username}</h2>
+          <ul>
+            {posts
+              .filter((post) => post.user_id === user.id)
+              .map((post) => (
+                <li key={post.id}>
+                  {post.content}
+                  <div>
+                    Likes: {post.likes} | Dislikes: {post.dislikes}
+                  </div>
+                  <div>
+                    <button onClick={() => handleLikeDislike(post.id, "like")}>
+                      Like
+                    </button>
+                    <button
+                      onClick={() => handleLikeDislike(post.id, "dislike")}
+                    >
+                      Dislike
+                    </button>
+                  </div>
+                </li>
+              ))}
+          </ul>
         </div>
       ))}
     </div>

@@ -1,3 +1,4 @@
+// Login.tsx:
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -5,27 +6,30 @@ import { useNavigate } from "react-router-dom";
 const Login: React.FC = () => {
   const [username, setUsername] = useState("");
   const [password, setPassword] = useState("");
-  const [error, setError] = useState("");
+  const [error, setError] = useState<string | null>(null);
   const navigate = useNavigate();
 
-  const handleSubmit = (event: React.FormEvent) => {
+  const handleSubmit = async (event: React.FormEvent) => {
     event.preventDefault();
 
-    axios
-      .post("http://localhost:3000/login", { username, password })
-      .then((response) => {
-        localStorage.setItem("token", response.data.token);
-        navigate("/"); // Redirect to home after successful login
-      })
-      .catch((error) => {
-        setError(error.response?.data || "There was an error logging in!");
-        console.error("There was an error logging in!", error);
+    try {
+      await axios.post("http://localhost:3000/login", {
+        username,
+        password,
       });
+
+      console.log("Logged in successfully!");
+      navigate("/user-list"); // Navigate to the user list page after successful login
+    } catch (error) {
+      console.error("There was an error logging in!", error);
+      setError("Invalid username or password. Please try again.");
+    }
   };
 
   return (
     <div>
-      <h2>Login</h2>
+      <h1>Social Network Login</h1>
+      {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={handleSubmit}>
         <div>
           <label>Username</label>
@@ -46,7 +50,6 @@ const Login: React.FC = () => {
           />
         </div>
         <button type="submit">Login</button>
-        {error && <p style={{ color: "red" }}>{error}</p>}
       </form>
     </div>
   );
