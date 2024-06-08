@@ -2,6 +2,7 @@
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
+import CreatePost from "./CreatePost";
 
 interface User {
   id: number;
@@ -10,6 +11,7 @@ interface User {
 
 interface Post {
   id: number;
+  user_id: number;
   content: string;
   likes: number;
   dislikes: number;
@@ -21,51 +23,23 @@ const UserList: React.FC = () => {
   const navigate = useNavigate();
 
   useEffect(() => {
-    const fetchData = async () => {
-      try {
-        const usersResponse = await axios.get("http://localhost:3000/users");
-        setUsers(usersResponse.data);
-        fetchPosts(usersResponse.data);
-      } catch (error) {
-        console.error("Error fetching users:", error);
-      }
-    };
-
-    fetchData();
+    axios.get("http://localhost:3000/users").then((response) => {
+      setUsers(response.data);
+      fetchPosts(response.data);
+    });
   }, []);
 
-  const fetchPosts = async (users: User[]) => {
-    try {
-      const postsData = await Promise.all(
-        users.map((user) =>
-          axios.get(`http://localhost:3000/posts/user/${user.id}`)
-        )
-      );
-
-      const postsByUser: { [userId: number]: Post[] } = {};
-      postsData.forEach((response, index) => {
-        postsByUser[users[index].id] = response.data;
-      });
-
-      setPosts(postsByUser);
-    } catch (error) {
-      console.error("Error fetching posts:", error);
-    }
-  };
-
-  const handleLikeDislike = async (
-    postId: number,
-    type: "like" | "dislike"
-  ) => {
-    try {
-      await axios.post(`http://localhost:3000/posts/${postId}/interact`, {
-        type,
-      });
-      // Refresh posts after interaction
-      fetchPosts(users);
-    } catch (error) {
-      console.error("Error interacting with post:", error);
-    }
+  const fetchPosts = (users: User[]) => {
+    users.forEach((user) => {
+      axios
+        .get(`http://localhost:3000/posts/user/${user.id}`)
+        .then((response) => {
+          setPosts((prevPosts) => ({
+            ...prevPosts,
+            [user.id]: response.data,
+          }));
+        });
+    });
   };
 
   const handleLogout = () => {
@@ -73,10 +47,30 @@ const UserList: React.FC = () => {
     navigate("/");
   };
 
+  const handleLikeDislike = async (
+    postId: number,
+    type: "like" | "dislike"
+  ) => {
+    try {
+      const endpoint = type === "like" ? "like" : "dislike";
+      await axios.post(`http://localhost:3000/posts/${postId}/${endpoint}`);
+      fetchPosts(users); // Refresh the posts after liking or disliking
+    } catch (error) {
+      console.error("Error interacting with post: ", error);
+    }
+  };
+
+  const handlePostCreated = () => {
+    axios.get("http://localhost:3000/users").then((response) => {
+      fetchPosts(response.data);
+    });
+  };
+
   return (
     <div>
       <h1>Super Simple Social Network</h1>
       <button onClick={handleLogout}>Logout</button>
+      <CreatePost onPostCreated={handlePostCreated} />
       {users.map((user) => (
         <div key={user.id}>
           <h2>{user.username}</h2>

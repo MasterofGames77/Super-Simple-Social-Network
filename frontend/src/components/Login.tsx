@@ -1,4 +1,3 @@
-// Login.tsx:
 import React, { useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -13,12 +12,13 @@ const Login: React.FC = () => {
     event.preventDefault();
 
     try {
-      await axios.post("http://localhost:3000/login", {
+      const response = await axios.post("http://localhost:3000/login", {
         username,
         password,
       });
 
       console.log("Logged in successfully!");
+      localStorage.setItem("user", JSON.stringify(response.data.user));
       navigate("/user-list"); // Navigate to the user list page after successful login
     } catch (error) {
       console.error("There was an error logging in!", error);

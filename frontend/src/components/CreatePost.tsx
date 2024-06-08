@@ -1,28 +1,28 @@
 import React, { useState } from "react";
 import axios from "axios";
 
-const CreatePost: React.FC = () => {
+interface CreatePostProps {
+  onPostCreated: () => void;
+}
+
+const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
   const [content, setContent] = useState("");
 
   const handleSubmit = (event: React.FormEvent) => {
     event.preventDefault();
 
-    const token = localStorage.getItem("token");
-    if (!token) {
-      console.error("No token found, please log in.");
+    const user = JSON.parse(localStorage.getItem("user") || "{}");
+    if (!user || !user.id) {
+      console.error("No user found, please log in.");
       return;
     }
 
     axios
-      .post(
-        "http://localhost:3000/posts",
-        { content },
-        {
-          headers: { "x-access-token": token },
-        }
-      )
+      .post("http://localhost:3000/posts", { user_id: user.id, content })
       .then(() => {
-        setContent("");
+        console.log("Post created successfully!");
+        setContent(""); // Clear the content input after successful submission
+        onPostCreated(); // Notify parent to refresh the post list
       })
       .catch((error) => {
         console.error("There was an error creating the post!", error);
@@ -33,6 +33,7 @@ const CreatePost: React.FC = () => {
     <form onSubmit={handleSubmit}>
       <div>
         <label>Content</label>
+        <br></br>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
