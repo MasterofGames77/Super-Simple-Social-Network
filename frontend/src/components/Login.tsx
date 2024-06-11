@@ -51,6 +51,7 @@ const Login: React.FC = () => {
         </div>
         <button type="submit">Login</button>
       </form>
+      <button onClick={() => navigate("/register")}>Create Account</button>
     </div>
   );
 };
