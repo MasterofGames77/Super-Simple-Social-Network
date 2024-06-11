@@ -32,14 +32,14 @@ const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
   return (
     <form onSubmit={handleSubmit}>
       <div>
-        <label>Content</label>
+        <label>Create Post</label>
         <br></br>
         <textarea
           value={content}
           onChange={(e) => setContent(e.target.value)}
         />
       </div>
-      <button type="submit">Create Post</button>
+      <button type="submit">Submit Post</button>
     </form>
   );
 };

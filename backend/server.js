@@ -25,6 +25,7 @@ connection.connect((err) => {
 // User registration
 app.post("/register", (req, res) => {
   const { username, password } = req.body;
+
   connection.query("INSERT INTO users (username, password) VALUES (?, ?)", [username, password], (err) => {
     if (err) {
       console.error("Error registering user:", err);

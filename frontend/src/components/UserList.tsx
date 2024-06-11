@@ -1,4 +1,3 @@
-// UserList.tsx
 import React, { useEffect, useState } from "react";
 import axios from "axios";
 import { useNavigate } from "react-router-dom";
@@ -11,8 +10,8 @@ interface User {
 
 interface Post {
   id: number;
-  user_id: number;
   content: string;
+  created_at: string;
   likes: number;
   dislikes: number;
 }
@@ -20,6 +19,7 @@ interface Post {
 const UserList: React.FC = () => {
   const [users, setUsers] = useState<User[]>([]);
   const [posts, setPosts] = useState<{ [userId: number]: Post[] }>({});
+  const [selectedUser, setSelectedUser] = useState<User | null>(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -52,34 +52,64 @@ const UserList: React.FC = () => {
     type: "like" | "dislike"
   ) => {
     try {
-      const endpoint = type === "like" ? "like" : "dislike";
-      await axios.post(`http://localhost:3000/posts/${postId}/${endpoint}`);
-      fetchPosts(users); // Refresh the posts after liking or disliking
+      await axios.post(`http://localhost:3000/posts/${postId}/${type}`);
+      // Update the local state with the new like/dislike count
+      setPosts((prevPosts) => {
+        const updatedPosts = { ...prevPosts };
+        Object.keys(updatedPosts).forEach((userId) => {
+          updatedPosts[parseInt(userId)] = updatedPosts[parseInt(userId)].map(
+            (post) => {
+              if (post.id === postId) {
+                return {
+                  ...post,
+                  likes: type === "like" ? post.likes + 1 : post.likes,
+                  dislikes:
+                    type === "dislike" ? post.dislikes + 1 : post.dislikes,
+                };
+              }
+              return post;
+            }
+          );
+        });
+        return updatedPosts;
+      });
     } catch (error) {
-      console.error("Error interacting with post: ", error);
+      console.error("Error interacting with post:", error);
     }
   };
 
-  const handlePostCreated = () => {
-    axios.get("http://localhost:3000/users").then((response) => {
-      fetchPosts(response.data);
-    });
+  const handleUserClick = (user: User) => {
+    setSelectedUser(user);
+  };
+
+  const handleShowAllPosts = () => {
+    setSelectedUser(null);
   };
 
   return (
     <div>
       <h1>Super Simple Social Network</h1>
       <button onClick={handleLogout}>Logout</button>
-      <CreatePost onPostCreated={handlePostCreated} />
-      {users.map((user) => (
-        <div key={user.id}>
-          <h2>{user.username}</h2>
+      <CreatePost onPostCreated={() => fetchPosts(users)} />
+      {selectedUser ? (
+        <div>
+          <h2>Posts by {selectedUser.username}</h2>
+          <button onClick={handleShowAllPosts}>Show All Posts</button>
           <ul>
-            {posts[user.id]?.map((post) => (
-              <li key={post.id}>
-                {post.content}
+            {posts[selectedUser.id]?.map((post) => (
+              <li key={post.id} style={{ marginBottom: "20px" }}>
                 <div>
-                  Likes: {post.likes} | Dislikes: {post.dislikes}
+                  <strong>Post:</strong> {post.content}
+                </div>
+                <div>
+                  <strong>Created On:</strong>{" "}
+                  {new Date(post.created_at).toLocaleString()}
+                </div>
+                <div>
+                  <strong>Likes:</strong> {post.likes}
+                </div>
+                <div>
+                  <strong>Dislikes:</strong> {post.dislikes}
                 </div>
                 <div>
                   <button onClick={() => handleLikeDislike(post.id, "like")}>
@@ -93,7 +123,47 @@ const UserList: React.FC = () => {
             ))}
           </ul>
         </div>
-      ))}
+      ) : (
+        users.map((user) => (
+          <div key={user.id}>
+            <h2
+              onClick={() => handleUserClick(user)}
+              style={{ cursor: "pointer" }}
+            >
+              {user.username}
+            </h2>
+            <ul>
+              {posts[user.id]?.map((post) => (
+                <li key={post.id} style={{ marginBottom: "20px" }}>
+                  <div>
+                    <strong>Post:</strong> {post.content}
+                  </div>
+                  <div>
+                    <strong>Created On:</strong>{" "}
+                    {new Date(post.created_at).toLocaleString()}
+                  </div>
+                  <div>
+                    <strong>Likes:</strong> {post.likes}
+                  </div>
+                  <div>
+                    <strong>Dislikes:</strong> {post.dislikes}
+                  </div>
+                  <div>
+                    <button onClick={() => handleLikeDislike(post.id, "like")}>
+                      Like
+                    </button>
+                    <button
+                      onClick={() => handleLikeDislike(post.id, "dislike")}
+                    >
+                      Dislike
+                    </button>
+                  </div>
+                </li>
+              ))}
+            </ul>
+          </div>
+        ))
+      )}
     </div>
   );
 };
