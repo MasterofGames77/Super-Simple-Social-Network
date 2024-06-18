@@ -27,7 +27,7 @@ const Login: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="container">
       <h1>Social Network Login</h1>
       {error && <p style={{ color: "red" }}>{error}</p>}
       <form onSubmit={handleSubmit}>

@@ -30,17 +30,19 @@ const CreatePost: React.FC<CreatePostProps> = ({ onPostCreated }) => {
   };
 
   return (
-    <form onSubmit={handleSubmit}>
-      <div>
-        <label>Create Post</label>
-        <br></br>
-        <textarea
-          value={content}
-          onChange={(e) => setContent(e.target.value)}
-        />
-      </div>
-      <button type="submit">Submit Post</button>
-    </form>
+    <div className="create-post">
+      <form onSubmit={handleSubmit}>
+        <div>
+          <label>Create Post</label>
+          <br />
+          <textarea
+            value={content}
+            onChange={(e) => setContent(e.target.value)}
+          />
+        </div>
+        <button type="submit">Submit Post</button>
+      </form>
+    </div>
   );
 };
 

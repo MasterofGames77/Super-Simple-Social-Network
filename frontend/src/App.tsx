@@ -4,7 +4,7 @@ import { BrowserRouter as Router, Route, Routes } from "react-router-dom";
 import Login from "./components/Login";
 import UserList from "./components/UserList";
 import Register from "./components/Register";
-//import "./App.css";
+import "./App.css";
 
 const App: React.FC = () => {
   return (
