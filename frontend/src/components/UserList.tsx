@@ -53,7 +53,6 @@ const UserList: React.FC = () => {
   ) => {
     try {
       await axios.post(`http://localhost:3000/posts/${postId}/${type}`);
-      // Update the local state with the new like/dislike count
       setPosts((prevPosts) => {
         const updatedPosts = { ...prevPosts };
         Object.keys(updatedPosts).forEach((userId) => {
@@ -87,9 +86,11 @@ const UserList: React.FC = () => {
   };
 
   return (
-    <div>
+    <div className="container">
+      <button className="logout-btn" onClick={handleLogout}>
+        Logout
+      </button>
       <h1>Super Simple Social Network</h1>
-      <button onClick={handleLogout}>Logout</button>
       <CreatePost onPostCreated={() => fetchPosts(users)} />
       {selectedUser ? (
         <div>
@@ -97,7 +98,7 @@ const UserList: React.FC = () => {
           <button onClick={handleShowAllPosts}>Show All Posts</button>
           <ul>
             {posts[selectedUser.id]?.map((post) => (
-              <li key={post.id} style={{ marginBottom: "20px" }}>
+              <li key={post.id} className="post">
                 <div>
                   <strong>Post:</strong> {post.content}
                 </div>
@@ -111,11 +112,14 @@ const UserList: React.FC = () => {
                 <div>
                   <strong>Dislikes:</strong> {post.dislikes}
                 </div>
-                <div>
+                <div className="actions">
                   <button onClick={() => handleLikeDislike(post.id, "like")}>
                     Like
                   </button>
-                  <button onClick={() => handleLikeDislike(post.id, "dislike")}>
+                  <button
+                    className="dislike"
+                    onClick={() => handleLikeDislike(post.id, "dislike")}
+                  >
                     Dislike
                   </button>
                 </div>
@@ -134,7 +138,7 @@ const UserList: React.FC = () => {
             </h2>
             <ul>
               {posts[user.id]?.map((post) => (
-                <li key={post.id} style={{ marginBottom: "20px" }}>
+                <li key={post.id} className="post">
                   <div>
                     <strong>Post:</strong> {post.content}
                   </div>
@@ -148,11 +152,12 @@ const UserList: React.FC = () => {
                   <div>
                     <strong>Dislikes:</strong> {post.dislikes}
                   </div>
-                  <div>
+                  <div className="actions">
                     <button onClick={() => handleLikeDislike(post.id, "like")}>
                       Like
                     </button>
                     <button
+                      className="dislike"
                       onClick={() => handleLikeDislike(post.id, "dislike")}
                     >
                       Dislike
